@@ -10,7 +10,7 @@ library(googlesheets4)
 library(googledrive)
 library(flexdashboard)  # For gauge chart
 library(ggplot2)        # For plotting
-library(DT)
+library(DT)             # For ROM Table
 
 
 ################### GET GSHEETS TO WORK W/ SHINY ##########################
@@ -115,20 +115,21 @@ ui <- fluidPage(
       
       # Categories Bar Chart
       plotOutput("categoriesBarChart"),
+      br(),
       
       # ROM Data Table
       # black header
-      fluidRow(
-        column(width = 12,
-               div(style = "background-color: black; padding: 10px; color: white; border-radius: 3px;",
-                   h3("Range of Motion (ROM) Metrics")))
-      ),
-      
+      # Header for norms table
+      #fluidRow(
+      #column(width = 12,
+      #div(style = "background-color: black; padding: 10px; color: white; border-radius: 3px;",
+      #h3("Range of Motion (ROM) Norms")))
+      #),
       # Norms table
-      fluidRow(
-        column(width = 12,
-               tableOutput("normsTable"))
-      ),
+      #fluidRow(
+      #column(width = 12,
+      #tableOutput("normsTable"))
+      #),
       
       # ROM Metrics Table
       fluidRow(
@@ -138,8 +139,9 @@ ui <- fluidPage(
       ),
       fluidRow(
         column(width = 12,
-               DTOutput("romMetricsTable"))  # Use DTOutput for rendering DT tables
+               DTOutput("romMetricsTable")),  # Use DTOutput for rendering DT tables
       ),
+      br(),
       
       ## LONGITUDINAL SECTION  ##  
       # Lower Body Power Section with black background
@@ -327,48 +329,51 @@ server <- function(input, output, session) {
   })
   
   # Reactive expression to calculate percentiles
-percentiles_data <- reactive({
-  req(input$playerName)
-  
-  player_data <- filter(new_assessment, `FULL NAME` == input$playerName)
-  age_group <- unique(player_data$`AGE GROUP`)
-  
-  historic_data_filtered <- filter(historic_data, `AGE GROUP` == age_group)
-  
-  metrics <- selected_metrics()
-  
-  percentiles <- data.frame(Metric = character(),
-                            `25th Percentile` = numeric(),
-                            `75th Percentile` = numeric(),
-                            stringsAsFactors = FALSE)
-  
-  for (metric in metrics) {
-    if (metric %in% colnames(historic_data_filtered)) {
-      p25 <- quantile(historic_data_filtered[[metric]], 0.25, na.rm = TRUE)
-      p75 <- quantile(historic_data_filtered[[metric]], 0.75, na.rm = TRUE)
-      percentiles <- rbind(percentiles, data.frame(Metric = metric, `25th Percentile` = p25, `75th Percentile` = p75))
-    } else if (metric == input$selectedRotaMetric) {
-      left_metric <- paste0(metric, " LEFT")
-      right_metric <- paste0(metric, " RIGHT")
-      
-      if (left_metric %in% colnames(historic_data_filtered) && right_metric %in% colnames(historic_data_filtered)) {
-        p25_left <- quantile(historic_data_filtered[[left_metric]], 0.25, na.rm = TRUE)
-        p75_left <- quantile(historic_data_filtered[[left_metric]], 0.75, na.rm = TRUE)
+  percentiles_data <- reactive({
+    req(input$playerName)
+    
+    player_data <- filter(new_assessment, `FULL NAME` == input$playerName)
+    age_group <- unique(player_data$`AGE GROUP`)
+    
+    historic_data_filtered <- filter(historic_data, `AGE GROUP` == age_group)
+    
+    metrics <- selected_metrics()
+    
+    percentiles <- data.frame(Metric = character(),
+                              `25th Percentile` = numeric(),
+                              `75th Percentile` = numeric(),
+                              stringsAsFactors = FALSE)
+    
+    for (metric in metrics) {
+      if (metric %in% colnames(historic_data_filtered)) {
+        p25 <- quantile(historic_data_filtered[[metric]], 0.25, na.rm = TRUE)
+        p75 <- quantile(historic_data_filtered[[metric]], 0.75, na.rm = TRUE)
+        percentiles <- rbind(percentiles, data.frame(Metric = metric, `25th Percentile` = p25, `75th Percentile` = p75))
+      } else if (metric == input$selectedRotaMetric) {
+        left_metric <- paste0(metric, " LEFT")
+        right_metric <- paste0(metric, " RIGHT")
         
-        p25_right <- quantile(historic_data_filtered[[right_metric]], 0.25, na.rm = TRUE)
-        p75_right <- quantile(historic_data_filtered[[right_metric]], 0.75, na.rm = TRUE)
-        
-        p25_avg <- mean(c(p25_left, p25_right), na.rm = TRUE)
-        p75_avg <- mean(c(p75_left, p75_right), na.rm = TRUE)
-        
-        percentiles <- rbind(percentiles, data.frame(Metric = metric, `25th Percentile` = p25_avg, `75th Percentile` = p75_avg))
-        
+        if (left_metric %in% colnames(historic_data_filtered) && right_metric %in% colnames(historic_data_filtered)) {
+          p25_left <- quantile(historic_data_filtered[[left_metric]], 0.25, na.rm = TRUE)
+          p75_left <- quantile(historic_data_filtered[[left_metric]], 0.75, na.rm = TRUE)
+          
+          p25_right <- quantile(historic_data_filtered[[right_metric]], 0.25, na.rm = TRUE)
+          p75_right <- quantile(historic_data_filtered[[right_metric]], 0.75, na.rm = TRUE)
+          
+          p25_avg <- mean(c(p25_left, p25_right), na.rm = TRUE)
+          p75_avg <- mean(c(p75_left, p75_right), na.rm = TRUE)
+          
+          percentiles <- rbind(percentiles, data.frame(Metric = metric, `25th Percentile` = p25_avg, `75th Percentile` = p75_avg))
+        }
       }
     }
-  }
-  
-  percentiles
-})
+    
+    # Debugging output
+    cat("Percentiles Data:\n")
+    print(percentiles)
+    
+    percentiles
+  })
   
   # Render the percentiles table
   output$percentilesTable <- renderTable({
@@ -415,7 +420,7 @@ percentiles_data <- reactive({
         `ANKLE DORSIFLEXION LEFT`, 
         `ANKLE DORSIFLEXION RIGHT`
       )
-  
+    
     # Render as DataTable
     DT::datatable(rom_data, options = list(
       pageLength = 12,  # Show up to 12 rows per page
@@ -428,7 +433,7 @@ percentiles_data <- reactive({
   # Render ROM metrics table with color coding
   output$romMetricsTable <- DT::renderDataTable({
     req(player_data_all_events())
-  
+    
     # Extract and pivot the data to have metrics as rows and events as columns
     data <- player_data_all_events() %>%
       select(
@@ -450,8 +455,7 @@ percentiles_data <- reactive({
       pivot_wider(names_from = `EVENT ID`, values_from = Value) %>%
       arrange(Metric)
     
-    # Check if any metrics are duplicated
-    print(data)
+    ###### ROM COLOR TESTING ######
     
     # Add color based on norms
     data_colored <- data %>%
@@ -468,16 +472,56 @@ percentiles_data <- reactive({
       pivot_wider(names_from = `Event ID`, values_from = c(Value, Color)) %>%
       arrange(Metric)
     
+    # Dynamically update column names to remove underscores and add labels
+    colnames(data_colored) <- gsub("_", " ", colnames(data_colored))  # Replace underscores with spaces
+    colnames(data_colored) <- gsub("Value", " ", colnames(data_colored))  # Replace Value with spaces
+    
+    # Define the positions of the columns for styling borders
+    border_after_cols <- c("Metric", "Above Average")
+    
     # Render as DataTable with conditional formatting
     DT::datatable(data_colored, options = list(
       pageLength = 12,  # Show up to 12 rows per page
-      autoWidth = TRUE,
       dom = 't',  # Only show the table (no search bar or pagination)
-      ordering = FALSE  # Disable ordering
+      ordering = FALSE,  # Disable ordering
+      columnDefs = list(
+        list(className = 'dt-center', targets = "_all"),  # Center-align text for all columns
+        list(className = 'dt-header-center', targets = "_all"),  # Center-align header text for all columns
+        list(width = '250px', targets = which(colnames(data_colored) == "Metric")),  # Set width for 'Metric' column
+        list(targets = which(grepl("^Color ", colnames(data_colored))),  # Apply styling to color columns
+             createdCell = JS(
+               "function(td, cellData, rowData, row, col) {",
+               "  $(td).css({'border-right': '1px solid gray'});",  # Add gray border
+               "}"
+             ))
+      ),
+      initComplete = JS(
+        "function(settings, json) {",
+        "  $(this.api().table().container()).css({'width': '100%'});",
+        "}"
+      )
     )) %>%
       formatStyle(
-        columns = names(data_colored)[!names(data_colored) %in% c("Metric", "Color")],
-        backgroundColor = styleEqual(c("red", "yellow", "green"), c("red", "yellow", "green"))
+        columns = grep("^Color ", names(data_colored), value = TRUE),  # Style color columns as needed
+        backgroundColor = styleEqual(c("red", "yellow", "green"), c("red", "yellow", "green")),
+        color = "transparent"  # Ensure no text color is displayed
+      ) %>%
+      formatStyle(
+        columns = which(colnames(data_colored) == "Metric"),  # Column index for 'Metric'
+        borderRight = "1px solid gray"  # Add border after 'Metric'
+      ) %>%
+      formatStyle(
+        columns = which(colnames(data_colored) == "Above Average"),  # Column index for 'Above Average'
+        borderRight = "1px solid gray"  # Add border after 'Above Average'
+      ) %>%
+      formatStyle(
+        columns = setdiff(names(data_colored), "Metric"),  # Apply to all columns except 'Metric'
+        textAlign = "center"  # Center-align text
+      ) %>%
+      formatStyle(
+        columns = names(data_colored),
+        `text-align` = "center",
+        `vertical-align` = "middle"
       )
   })
   
@@ -530,7 +574,7 @@ percentiles_data <- reactive({
   })
   
   # Output reactive elements based on selected player and event
-    # player details section
+  # player details section
   output$ageGroup <- renderText({
     req(player_data())
     paste("Age Group: ", player_data()$`AGE GROUP`)
@@ -617,7 +661,7 @@ percentiles_data <- reactive({
   output$categoriesBarChart <- renderPlot({
     req(player_data())
     
-  # Create a data frame for the bar chart
+    # Create a data frame for the bar chart
     categories_data <- data.frame(
       Category = factor(c("Movement Score", "Lower Body Power Score", "Upper Body Power Score", "Rotational Power Score", "Overall Score (CATS)"),
                         levels = c("Movement Score", "Lower Body Power Score", "Upper Body Power Score", "Rotational Power Score", "Overall Score (CATS)")),
@@ -765,7 +809,7 @@ percentiles_data <- reactive({
     cat("Percentiles Data:\n")
     cat(str(percentiles), "\n")
     cat("Selected Metric:\n")
-    cat(input$selectedCMJMetric, "\n")
+    cat(input$selected10Metric, "\n")
     
     # Extract percentile values with correct column names
     p25 <- percentiles$`25th Percentile`[percentiles$Metric == input$selectedCMJMetric]
@@ -787,9 +831,9 @@ percentiles_data <- reactive({
     
     ggplot(player_data, aes(x = `EVENT ID`, y = !!sym(input$selectedCMJMetric))) +
       geom_bar(stat = "identity", fill = "black") +
-      geom_hline(yintercept = p25, color = "darkred", linetype = "dashed") + 
-      geom_hline(yintercept = p75, color = "darkgreen", linetype = "dashed") + 
-      labs(title = paste0(input$selectedCMJMetric, " Longitudinal Graph"), x = "Event ID", y = input$selectedCMJMetric) +
+      geom_hline(yintercept = p25, color = "darkred", linetype = "dashed") +
+      geom_hline(yintercept = p75, color = "darkgreen", linetype = "dashed") +
+      labs(title = paste0(input$selected10Metric, " Longitudinal Graph"), x = "Event ID", y = input$selectedCMJMetric) +
       theme_minimal()
   })
   
@@ -822,6 +866,7 @@ percentiles_data <- reactive({
     
     # Extract the values for selected metric
     player_data <- filter(new_assessment, `FULL NAME` == input$playerName)
+    
     
     # Calculate percentiles
     percentiles <- percentiles_data()
@@ -862,11 +907,11 @@ percentiles_data <- reactive({
   
   # Rotational Test Data
   
-  # Output for Upper Body metrics table
+  # Output for Rota metrics table
   output$rotaMetricsTable <- renderTable({
     req(player_data_all_events())
     
-    # Define the upper body metrics you want to include
+    # Define the rota metrics you want to include
     rota_metrics <- c(
       "MED BALL - HITTER STYLE SHOT PUT PEAK VELOCITY (M/S) LEFT",
       "MED BALL - HITTER STYLE SHOT PUT PEAK VELOCITY (M/S) RIGHT",
@@ -876,7 +921,7 @@ percentiles_data <- reactive({
       "MED BALL - HITTER STYLE SHOT PUT PEAK ACCELERATION (G) RIGHT"
     )
     
-    # Extract and filter data for the specified 10-5 metrics
+    # Extract and filter data for the specified rota metrics
     data <- player_data_all_events() %>%
       select(`EVENT ID`, all_of(rota_metrics)) %>%
       pivot_longer(cols = -`EVENT ID`, names_to = "Metric", values_to = "Value") %>%
@@ -946,18 +991,6 @@ percentiles_data <- reactive({
   })
 }
 
-
+####### RUN THE APP #######
 # Run the application 
 shinyApp(ui = ui, server = server)
-
-
-
-
-
-
-
-
-
-
-
-

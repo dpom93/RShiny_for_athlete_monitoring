@@ -1,12 +1,10 @@
 # R SHINY FOR ATHLETE MONITORING
 
-**Web Application Link**
+**Important Links**
 
-[R SHINY FOR ATHLETE MONITORING WEB APP](https://dpomperformance.shinyapps.io/RWalkthrough/)
+[Web Application Link](https://dpomperformance.shinyapps.io/RWalkthrough/)
 
-**Youtube Series for Creating the Application**
-
-[Learning RStudio + Shinyapps.io for Athlete Monitoring](https://www.youtube.com/playlist?list=PLnCoHDFUN2utbjuj24WKOYhclndRsXBmV)
+[Youtube Series for Creating the Application](https://www.youtube.com/playlist?list=PLnCoHDFUN2utbjuj24WKOYhclndRsXBmV)
 
 **Project Description**
 

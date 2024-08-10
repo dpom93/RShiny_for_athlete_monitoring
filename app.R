@@ -1,7 +1,7 @@
 ##################################################
 # Learning R Shiny for Athlete Monitoring
 ##################################################
-#rsconnect::showLogs()
+# rsconnect::showLogs()
 # rm(list = ls()) # clear environment
 # Load necessary libraries
 library(shiny)
@@ -15,8 +15,8 @@ library(DT)             # For ROM Table
 
 
 ################### GET GSHEETS TO WORK W/ SHINY ##########################
-
-options(gargle_oauth_cache = ".secrets")
+#rsconnect::setAccountInfo(name='dpomeroy', token='84531FE110FBC4D61E6BFFAC385308D1', secret='oqIlxOd4S1fPXycyVJSUoVQWudALJe9flanTdn2C')# designate project-specific cache
+#options(gargle_oauth_cache = ".secrets")
 
 # check the value of the option, if you like
 gargle::gargle_oauth_cache()
@@ -31,13 +31,13 @@ list.files(".secrets/")
 
 # Read in new assessment data from Google Sheets
 new_assessment <- read_sheet(
-  "https://docs.google.com/spreadsheets/d/1fnwlhY8UcPxgDVEsFPaJxnJp4quP2REjpnQnWwW-KSo/edit?gid=0#gid=0",
+  "https://docs.google.com/spreadsheets/d/1tXBVGMXrCPWBsaq-mFqdj0yHRTx_smDG924V-rChEXo/edit?gid=0#gid=0",
   sheet = "Sheet1"
 )
 
 # Read in Historic Data
 historic_data <- read_sheet(
-  "https://docs.google.com/spreadsheets/d/1fnwlhY8UcPxgDVEsFPaJxnJp4quP2REjpnQnWwW-KSo/edit?gid=0#gid=0",
+  "https://docs.google.com/spreadsheets/d/1JXtJeBE5z_fFERvof_DJruqthnNsNlkGQfaDeEwhzlk/edit?gid=0#gid=0",
   sheet = "Sheet1"
 )
 

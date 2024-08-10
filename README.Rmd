@@ -1,0 +1,13 @@
+---
+title: "README.md"
+output: html_document
+date: "2024-08-10"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## README
+
+Repository for RShiny for Athlete Monitoring data project

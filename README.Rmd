@@ -1,13 +1,3 @@
----
-title: "README.md"
-output: html_document
-date: "2024-08-10"
----
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## README
 
 [R SHINY FOR ATHLETE MONITORING WEB APP](https://dpomperformance.shinyapps.io/RWalkthrough/)

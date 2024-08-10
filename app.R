@@ -1,6 +1,7 @@
 ##################################################
 # Learning R Shiny for Athlete Monitoring
 ##################################################
+#rsconnect::showLogs()
 # rm(list = ls()) # clear environment
 # Load necessary libraries
 library(shiny)
@@ -15,7 +16,6 @@ library(DT)             # For ROM Table
 
 ################### GET GSHEETS TO WORK W/ SHINY ##########################
 
-# designate project-specific cache
 options(gargle_oauth_cache = ".secrets")
 
 # check the value of the option, if you like

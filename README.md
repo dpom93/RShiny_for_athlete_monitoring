@@ -1,10 +1,14 @@
 # R SHINY FOR ATHLETE MONITORING
 
 **Web Application Link**
+
 [R SHINY FOR ATHLETE MONITORING WEB APP](https://dpomperformance.shinyapps.io/RWalkthrough/)
 
 **Youtube Series for Creating the Application**
+
 [Learning RStudio + Shinyapps.io for Athlete Monitoring](https://www.youtube.com/playlist?list=PLnCoHDFUN2utbjuj24WKOYhclndRsXBmV)
+
+**Project Description**
 
 This project involves the creation of a dynamic Shiny application dashboard designed specifically for sport scientists, practitioners, and coaches to monitor and optimize athlete performance. The dashboard focuses on physical assessments conducted with the Output Sports IMU, covering key metric categories such as Range of Motion (ROM), Lower Body Power, Upper Body Power, and Rotational Power.
 

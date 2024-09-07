@@ -62,6 +62,16 @@ ui <- fluidPage(
       selectInput("eventId", "Select Event ID:",
                   choices = NULL),
       
+      # Output for displaying the Training Program Suggestion
+      h4("Training Program Suggestion"),
+      #textOutput("p_power_score"),
+      #textOutput("p_velo_score"),
+      # Display Average Score and Ratio
+      #textOutput("average_scores"),
+      #textOutput("ratio_scores"),
+      # Display Training Program Suggestion
+      textOutput("training_program_suggestion"),
+      
       # Player details section
       h4("Player Details"),
       
@@ -71,9 +81,6 @@ ui <- fluidPage(
       textOutput("batsThrows"),
       br(), # Add space between sections
       
-      # Display percentiles
-      h4("Percentiles for Selected Metrics"),
-      tableOutput("percentilesTable"),
       
       # Text & Gauge output for overall score with sidebarPanel
       fluidRow(
@@ -82,7 +89,11 @@ ui <- fluidPage(
                br(),
                gaugeOutput("overallGauge")
         )
-      )
+      ),
+      
+      # Display percentiles
+      h4("Percentiles for Selected Metrics"),
+      tableOutput("percentilesTable"),
     ),
     
     mainPanel(
@@ -379,6 +390,112 @@ server <- function(input, output, session) {
   output$percentilesTable <- renderTable({
     percentiles_data()
   }, rownames = FALSE)
+  
+  ###### TRAINING PROGRAM SUGGESTION ######
+  # Reactive expression to extract program scores based on selected player and event
+  program_scores <- reactive({
+    req(input$playerName, input$eventId)
+    
+    # Filter the data to get scores for the selected player and event
+    scores <- filter(new_assessment, `FULL NAME` == input$playerName & `EVENT ID` == input$eventId)
+    
+    # Check if scores exist
+    if (nrow(scores) == 0) {
+      return(list(p_power_score = NA, p_velo_score = NA))
+    }
+    
+    # Return the scores
+    list(
+      p_power_score = scores$`P.POWER SCORE`,
+      p_velo_score = scores$`P.VELO SCORE`,
+      movement_score = scores$`MOVEMENT SCORE`
+    )
+  })
+  
+  # Calculate and display the average of P.POWER SCORE and P.VELO SCORE
+  output$average_scores <- renderText({
+    scores <- program_scores()
+    
+    if (!is.na(scores$p_power_score) && !is.na(scores$p_velo_score)) {
+      p_power_score <- as.numeric(scores$p_power_score)
+      p_velo_score <- as.numeric(scores$p_velo_score)
+      
+      average_score <- (p_power_score + p_velo_score) / 2
+      paste("Average Score:", round(average_score, 2))
+    } else {
+      "Average Score: Not Available"
+    }
+  })
+  
+  # Calculate and display the ratio of P.POWER SCORE to P.VELO SCORE
+  output$ratio_scores <- renderText({
+    scores <- program_scores()
+    
+    if (!is.na(scores$p_power_score) && !is.na(scores$p_velo_score)) {
+      p_power_score <- as.numeric(scores$p_power_score)
+      p_velo_score <- as.numeric(scores$p_velo_score)
+      
+      # Calculate the ratio and convert to percentage
+      if (p_velo_score != 0) {
+        ratio <- (p_power_score / p_velo_score) / 100
+        paste("Ratio (P.POWER SCORE / P.VELO SCORE / 100):", round(ratio, 2))
+      } else {
+        "Ratio: Cannot divide by zero"
+      }
+    } else {
+      "Ratio: Not Available"
+    }
+  })
+  
+  # Display the P.POWER SCORE in the sidebar
+  output$p_power_score <- renderText({
+    if (!is.na(program_scores()$p_power_score)) {
+      paste("P.POWER SCORE:", program_scores()$p_power_score)
+    } else {
+      "P.POWER SCORE: Not Available"
+    }
+  })
+  
+  # Display the P.VELO SCORE in the sidebar
+  output$p_velo_score <- renderText({
+    if (!is.na(program_scores()$p_velo_score)) {
+      paste("P.VELO SCORE:", program_scores()$p_velo_score)
+    } else {
+      "P.VELO SCORE: Not Available"
+    }
+  })
+  
+  # Determine training program suggestion
+  output$training_program_suggestion <- renderText({
+    req(input$playerName, input$eventId)
+    
+    scores <- program_scores()
+    
+    if (!is.na(scores$p_power_score) && !is.na(scores$p_velo_score) && !is.na(scores$movement_score)) {
+      p_power_score <- as.numeric(scores$p_power_score)
+      p_velo_score <- as.numeric(scores$p_velo_score)
+      movement_score <- as.numeric(scores$movement_score)
+      
+      average_score <- (p_power_score + p_velo_score) / 2
+      ratio <- (p_power_score / p_velo_score) * 100
+      
+      suggestion <- "No suggestion"
+      
+      if (movement_score < 60) {
+        suggestion <- "Movement"
+      } else if (movement_score < average_score) {
+        suggestion <- "Movement"
+      } else if (ratio > 0) {
+        suggestion <- "Strength"
+      } else if (ratio < 0) {
+        suggestion <- "Power"
+      }
+      
+      paste("Suggestion:", suggestion)
+    } else {
+      "Suggestion: Not Available"
+    }
+  })
   
   ### ROM ##
   # Define norms data frame

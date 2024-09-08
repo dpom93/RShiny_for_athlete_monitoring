@@ -2,7 +2,7 @@
 
 **Web Application Link**
 
-[R SHINY FOR ATHLETE MONITORING WEB APP](https://dpomperformance.shinyapps.io/RWalkthrough/)
+[R SHINY FOR ATHLETE MONITORING WEB APP](https://dpomeroy.shinyapps.io/RWalkthrough/)
 
 **Youtube Series for Creating the Application**
 

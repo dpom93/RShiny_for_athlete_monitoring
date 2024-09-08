@@ -1,8 +1,8 @@
 ##################################################
 # Learning R Shiny for Athlete Monitoring
 ##################################################
-# rsconnect::showLogs()
-# rm(list = ls()) # clear environment
+#rsconnect::showLogs()
+#rm(list = ls()) # clear environment
 # Load necessary libraries
 library(shiny)
 library(dplyr)
@@ -12,11 +12,15 @@ library(googledrive)
 library(flexdashboard)  # For gauge chart
 library(ggplot2)        # For plotting
 library(DT)             # For ROM Table
-#new text
+library(rsconnect)
 
 ################### GET GSHEETS TO WORK W/ SHINY ##########################
-#rsconnect::setAccountInfo(name='dpomeroy', token='84531FE110FBC4D61E6BFFAC385308D1', secret='oqIlxOd4S1fPXycyVJSUoVQWudALJe9flanTdn2C')# designate project-specific cache
-#options(gargle_oauth_cache = ".secrets")
+rsconnect::setAccountInfo(name='dpomperformance',
+                          token='B35548C109EE6CB4266E60B6F643CE45',
+                          secret='r9D0QU5rdS8A5tCREUULCpznW+piTEdE2bi40meu')
+
+# designate project-specific cache
+options(gargle_oauth_cache = ".secrets")
 
 # check the value of the option, if you like
 gargle::gargle_oauth_cache()

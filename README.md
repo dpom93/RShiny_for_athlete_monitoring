@@ -20,8 +20,8 @@ The dashboard also calculates ratios between movement, strength, power, and velo
 
 ## Steps to Reproduce
 - Make your own copy of the following Google Sheets 
-  - new_assessment data
-  - historic_data
+  - [new_assessment data](https://docs.google.com/spreadsheets/d/1tXBVGMXrCPWBsaq-mFqdj0yHRTx_smDG924V-rChEXo/edit?usp=sharing)
+  - [historic_data](https://docs.google.com/spreadsheets/d/1JXtJeBE5z_fFERvof_DJruqthnNsNlkGQfaDeEwhzlk/edit?usp=sharing)
 
 - Place your unique Google Sheets URL into READ IN GSHEETS DATA section in App.R code
 
